@@ -39,10 +39,11 @@ public class DeleteArrayElement {
             for (int i = index_del; i < n - 1; i++) {
                 arr[i] = arr[i + 1];
             }
+            arr[n-1] = 0;
             n--;
 
             System.out.print("Mảng sau khi xóa phần tử " + X + ": ");
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < arr.length; i++) {
                 System.out.print(arr[i] + " ");
             }
             System.out.println();
