@@ -6,11 +6,30 @@ public class PrimeNumber {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.print("Nhập số lượng số nguyên tố cần hiển thị: ");
-        int numbers = sc.nextInt();
+        int numbers;
+
+        while (true) {
+            try {
+                System.out.print("Nhập số lượng số nguyên tố cần hiển thị: ");
+                String input = sc.nextLine().trim();
+
+                numbers = Integer.parseInt(input);
+
+                if (numbers <= 0 ) {
+                    System.out.println(" Vui lòng nhập một số nguyên dương lớn hơn 0\n");
+                    continue;
+                }
+                break;
+
+            } catch (NumberFormatException ignored) {
+                System.out.println(" Vui lòng nhập một số nguyên dương lớn hơn 0\n");
+            }
+        }
+
         int count = 0;
         int N = 2;
 
+        System.out.println("Các số nguyên tố đầu tiên là:");
         while (count < numbers) {
             if (isPrime(N)) {
                 System.out.print(N + " ");
