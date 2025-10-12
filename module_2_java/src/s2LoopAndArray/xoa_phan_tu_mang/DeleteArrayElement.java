@@ -1,4 +1,4 @@
-package xoa_phan_tu_mang;
+package s2LoopAndArray.xoa_phan_tu_mang;
 
 import java.util.Scanner;
 

@@ -1,4 +1,4 @@
-package hien_thi_20_so_nguyen_to_dau_tien;
+package s2LoopAndArray.hien_thi_20_so_nguyen_to_dau_tien;
 
 import java.util.Scanner;
 

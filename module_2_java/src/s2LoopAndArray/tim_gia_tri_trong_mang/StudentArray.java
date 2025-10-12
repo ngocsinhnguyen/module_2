@@ -1,4 +1,4 @@
-package tim_gia_tri_trong_mang;
+package s2LoopAndArray.tim_gia_tri_trong_mang;
 
 import java.util.Scanner;
 

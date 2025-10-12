@@ -1,4 +1,4 @@
-package hien_thi_cac_loai_hinh;
+package s2LoopAndArray.hien_thi_cac_loai_hinh;
 
 import java.util.Scanner;
 

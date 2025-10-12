@@ -1,4 +1,4 @@
-package dao_phan_tu_mang;
+package s2LoopAndArray.dao_phan_tu_mang;
 
 import java.util.Scanner;
 

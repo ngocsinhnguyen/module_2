@@ -1,4 +1,4 @@
-package gop_mang;
+package s2LoopAndArray.gop_mang;
 
 import java.util.Scanner;
 

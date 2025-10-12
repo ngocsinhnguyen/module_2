@@ -1,6 +1,6 @@
-package cac_so_nguyen_to_nho_hon_100;
+package s2LoopAndArray.cac_so_nguyen_to_nho_hon_100;
 
-import hien_thi_20_so_nguyen_to_dau_tien.PrimeNumber;
+import s2LoopAndArray.hien_thi_20_so_nguyen_to_dau_tien.PrimeNumber;
 
 public class PrimeNumberUnder100 {
     public static void main(String[] args) {
