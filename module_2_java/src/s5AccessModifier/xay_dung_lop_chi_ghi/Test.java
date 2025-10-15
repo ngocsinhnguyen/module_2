@@ -8,7 +8,5 @@ public class Test {
         s.setName("Sinh");
         s.setClasses("C08");
 
-        System.out.println("Tên: " + s.getName());
-        System.out.println("Lớp: " + s.getClasses());
     }
 }
