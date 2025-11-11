@@ -30,7 +30,6 @@ public class MenuView {
         System.out.println("5. Lịch sử giao dịch");
         System.out.println("6. Đổi mã PIN");
         System.out.println("0. Đăng xuất");
-        System.out.println("-1. 🔙 Quay về");
         System.out.print("Chọn: ");
         String s = sc.nextLine().trim();
         try {

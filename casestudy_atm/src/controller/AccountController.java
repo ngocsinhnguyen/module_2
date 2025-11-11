@@ -85,12 +85,18 @@ public class AccountController {
         String cardType = null, ownerName = null, identityNumber = null, phoneNumber = null;
         String password = null, confirmPassword, pin = null, confirmPin;
 
+
         while (true) {
             switch (step) {
-                case 1 -> {
+                case 1:
                     System.out.println("\n--- CHỌN LOẠI THẺ ---");
+                    System.out.println("1️⃣  Thẻ ATM Smart 24/7");
+                    System.out.println("2️⃣  Thẻ TPBank Visa CashFree");
+                    System.out.println("3️⃣  Thẻ TPBank Visa Platinum");
+                    System.out.println("4️⃣  Thẻ Flash 2IN1");
+
                     int cardChoice = menu.inputInt("Chọn loại thẻ (1-4, hoặc -1 để quay lại): ");
-                    if (cardChoice == -1) return; // bước đầu thì về menu chính
+                    if (cardChoice == -1) return; // vì đây là bước đầu tiên
                     cardType = switch (cardChoice) {
                         case 1 -> "ATM Smart 24/7";
                         case 2 -> "TPBank Visa CashFree";
@@ -98,116 +104,84 @@ public class AccountController {
                         case 4 -> "Flash 2IN1";
                         default -> null;
                     };
-                    if (cardType == null) System.out.println("❌ Lựa chọn không hợp lệ!");
-                    else {
+                    if (cardType == null) {
+                        System.out.println("❌ Lựa chọn không hợp lệ!");
+                    } else {
                         System.out.println("✅ Bạn đã chọn: " + cardType);
                         step++;
                     }
-                }
+                    break;
 
-                case 2 -> {
+                case 2:
                     ownerName = menu.input("Nhập tên chủ thẻ (hoặc -1 để quay lại): ");
-                    if (ownerName.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (ownerName.equals("-1")) { step--; break; }
                     identityNumber = menu.input("Nhập số CCCD/CMND (hoặc -1 để quay lại): ");
-                    if (identityNumber.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (identityNumber.equals("-1")) { step--; break; }
                     phoneNumber = menu.input("Nhập số điện thoại (hoặc -1 để quay lại): ");
-                    if (phoneNumber.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (phoneNumber.equals("-1")) { step--; break; }
                     step++;
-                }
+                    break;
 
-                case 3 -> {
+                case 3:
                     String otp = menu.input("Nhập mã OTP (hoặc -1 để quay lại): ");
-                    if (otp.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (otp.equals("-1")) { step--; break; }
                     System.out.println("✅ Xác thực OTP thành công!");
                     step++;
-                }
+                    break;
 
-                case 4 -> {
-                    if (menu.input("Đặt ngón trỏ vào máy quét (Enter hoặc -1 để quay lại): ").equals("-1")) {
-                        step--;
-                        break;
-                    }
+                case 4:
+                    if (menu.input("Đặt ngón trỏ vào máy quét (Enter hoặc -1 để quay lại): ").equals("-1")) { step--; break; }
                     System.out.println("✅ Vân tay hợp lệ!");
-                    if (menu.input("Nhìn vào camera (Enter hoặc -1 để quay lại): ").equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (menu.input("Nhìn vào camera (Enter hoặc -1 để quay lại): ").equals("-1")) { step--; break; }
                     System.out.println("✅ Nhận diện khuôn mặt thành công!");
                     step++;
-                }
+                    break;
 
-                case 5 -> {
+                case 5:
                     password = menu.input("Tạo mật khẩu (>=6 ký tự, hoặc -1 để quay lại): ");
-                    if (password.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (password.equals("-1")) { step--; break; }
                     if (password.length() < 6) {
                         System.out.println("❌ Mật khẩu quá ngắn!");
                         break;
                     }
                     confirmPassword = menu.input("Xác nhận mật khẩu (hoặc -1 để quay lại): ");
-                    if (confirmPassword.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (confirmPassword.equals("-1")) { step--; break; }
                     if (!password.equals(confirmPassword)) {
                         System.out.println("❌ Mật khẩu không khớp!");
                         break;
                     }
                     step++;
-                }
+                    break;
 
-                case 6 -> {
+                case 6:
                     pin = menu.input("Nhập PIN (4 số, hoặc -1 để quay lại): ");
-                    if (pin.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (pin.equals("-1")) { step--; break; }
                     if (!pin.matches("\\d{4}")) {
                         System.out.println("❌ PIN không hợp lệ!");
                         break;
                     }
                     confirmPin = menu.input("Xác nhận PIN (hoặc -1 để quay lại): ");
-                    if (confirmPin.equals("-1")) {
-                        step--;
-                        break;
-                    }
+                    if (confirmPin.equals("-1")) { step--; break; }
                     if (!pin.equals(confirmPin)) {
                         System.out.println("❌ PIN không khớp!");
                         break;
                     }
                     step++;
-                }
+                    break;
 
-                case 7 -> {
-                    if (menu.input("Ký tên xác nhận (Enter hoặc -1 để quay lại): ").equals("-1")) {
-                        step--;
-                        break;
-                    }
+                case 7:
+                    if (menu.input("Ký tên xác nhận (Enter hoặc -1 để quay lại): ").equals("-1")) { step--; break; }
+
                     System.out.print("⏳ Đang tạo tài khoản");
                     for (int i = 0; i < 3; i++) {
                         try {
                             Thread.sleep(400);
                             System.out.print(".");
-                        } catch (InterruptedException ignored) {
-                        }
+                        } catch (InterruptedException ignored) {}
                     }
                     System.out.println();
 
-                    Account newAcc = accService.createNewAccount(ownerName, password, pin, "TPBank",cardType);
+                    Account newAcc = accService.createNewAccount(ownerName, password, pin, "TPBank", cardType);
                     if (newAcc != null) {
                         System.out.println("\n🎉 TẠO THẺ THÀNH CÔNG 🎉");
                         System.out.println("👤 Chủ thẻ: " + newAcc.getOwnerName());
@@ -217,8 +191,7 @@ public class AccountController {
                     } else {
                         System.out.println("❌ Lỗi khi tạo tài khoản!");
                     }
-                    return;
-                }
+                    return; // kết thúc khi tạo xong
             }
         }
     }

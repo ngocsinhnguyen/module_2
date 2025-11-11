@@ -16,10 +16,12 @@ public class AccountRepository {
      * Thêm tài khoản mới vào danh sách in-memory.
      * Lưu ý: Cần gọi saveAll() sau khi thêm để lưu vào DataSource nếu cần.
      */
+
     public void save(Account account) {
         if (account != null && findByAccountNumber(account.getAccountNumber()) == null) {
             accounts.add(account);
         }
+        saveAll();
     }
 
     public Account findByAccountNumber(String accNum) {
