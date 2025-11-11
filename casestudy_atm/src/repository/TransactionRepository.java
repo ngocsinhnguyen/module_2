@@ -2,6 +2,7 @@ package repository;
 
 import model.Transaction;
 import util.DataSource;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +15,13 @@ public class TransactionRepository {
 
     public void add(Transaction t) {
         transactions.add(t);
-        DataSource.saveTransactions(transactions); // tự động ghi mỗi khi có giao dịch mới
+        DataSource.saveTransactions(transactions);
     }
 
     public List<Transaction> findByAccount(String accNum) {
         List<Transaction> result = new ArrayList<>();
         for (Transaction t : transactions) {
-            if (t.getAccountNumber().equals(accNum)) result.add(t);
+            if (t.getAccountNumber().trim().equals(accNum.trim())) result.add(t);
         }
         return result;
     }

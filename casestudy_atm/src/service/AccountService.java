@@ -4,6 +4,7 @@ import model.Account;
 import model.Transaction;
 import repository.AccountRepository;
 import repository.TransactionRepository;
+import java.util.UUID;
 
 public class AccountService {
     private final AccountRepository accountRepo;
@@ -14,50 +15,122 @@ public class AccountService {
         this.transRepo = transRepo;
     }
 
-    public Account login(String accNum, String pin) {
-        Account acc = accountRepo.findByAccountNumber(accNum);
-        if (acc != null && acc.getPin().equals(pin)) {
-            return acc;
+    public Account findAccount(String accNum) {
+        return accountRepo.findByAccountNumber(accNum);
+    }
+
+    /**
+     * Tạo tài khoản mới với password và PIN riêng biệt
+     * @param ownerName Tên chủ tài khoản
+     * @param password Mật khẩu đăng nhập
+     * @param pin Mã PIN giao dịch
+     * @param bankName Tên ngân hàng
+     * @return Account mới hoặc null nếu thất bại
+     */
+    public Account createNewAccount(String ownerName, String password, String pin, String bankName, String cardType) {
+        // Kiểm tra tính hợp lệ
+        if (ownerName == null || ownerName.trim().isEmpty()) {
+            return null;
         }
+        if (password == null || password.length() < 6) {
+            return null;
+        }
+        if (pin == null || pin.length() != 4) {
+            return null;
+        }
+
+        // Tạo số tài khoản ngẫu nhiên duy nhất
+        String newAccountNumber = generateUniqueAccountNumber();
+
+        // Tạo đối tượng Account mới với đầy đủ tham số
+        Account newAccount = new Account(
+                newAccountNumber,   // Số tài khoản
+                ownerName,          // Tên chủ tài khoản
+                password,           // Password đăng nhập
+                pin,                // PIN giao dịch
+                0.0,                // Số dư ban đầu = 0
+                bankName            // Tên ngân hàng
+        );
+
+        // Lưu tài khoản mới vào Repository
+        accountRepo.save(newAccount);
+        return newAccount;
+    }
+
+    // Phương thức tạo số tài khoản ngẫu nhiên duy nhất
+    private String generateUniqueAccountNumber() {
+        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
+    }
+
+    // Login bằng password
+    public Account login(String accNum, String password) {
+        Account a = accountRepo.findByAccountNumber(accNum);
+        if (a == null) return null;
+
+        // Kiểm tra xem tài khoản có bị khóa không
+        if (a.isLocked()) {
+            System.out.println("🚫 Tài khoản đã bị khóa! Vui lòng liên hệ ngân hàng để mở khóa.");
+            return null;
+        }
+
+        // Kiểm tra mật khẩu
+        if (a.getPassword().equals(password)) {
+            return a;
+        }
+
         return null;
     }
 
+    public boolean verifyPin(Account acc, String pin) {
+        if (acc == null || pin == null) return false;
+        return acc.getPin().equals(pin);
+    }
+
+    public boolean changePin(Account acc, String oldPin, String newPin) {
+        if (acc == null) return false;
+        if (!verifyPin(acc, oldPin)) return false;
+        acc.setPin(newPin);
+        accountRepo.saveAll();
+        return true;
+    }
+
     public boolean deposit(Account acc, double amount) {
-        if (amount <= 0) return false;
+        if (acc == null || amount <= 0) return false;
         acc.deposit(amount);
-        transRepo.add(new Transaction(acc.getAccountNumber(), "DEPOSIT", amount));
+        transRepo.add(new Transaction(acc.getAccountNumber(), "Nạp tiền", amount));
         accountRepo.saveAll();
         return true;
     }
 
     public boolean withdraw(Account acc, double amount) {
-        if (amount <= 0 || amount > acc.getBalance()) return false;
-        acc.withdraw(amount);
-        transRepo.add(new Transaction(acc.getAccountNumber(), "WITHDRAW", amount));
+        if (acc == null || amount <= 0) return false;
+        if (!acc.withdraw(amount)) return false;
+        transRepo.add(new Transaction(acc.getAccountNumber(), "Rút tiền", amount));
         accountRepo.saveAll();
         return true;
     }
 
-    // ✅ Cập nhật: xử lý toàn bộ logic transfer trong service
     public boolean transfer(Account from, String targetAccNum, double amount) {
-        if (amount <= 0) return false;
+        if (from == null || amount <= 0) return false;
         Account to = accountRepo.findByAccountNumber(targetAccNum);
-        if (to == null) {
-            System.out.println("❌ Không tìm thấy tài khoản nhận!");
-            return false;
-        }
-        if (from.withdraw(amount)) {
-            to.deposit(amount);
-            transRepo.add(new Transaction(from.getAccountNumber(), "TRANSFER_OUT", amount));
-            transRepo.add(new Transaction(to.getAccountNumber(), "TRANSFER_IN", amount));
-            accountRepo.saveAll();
-            return true;
-        }
-        System.out.println("❌ Số dư không đủ để chuyển!");
-        return false;
+        if (to == null) return false;
+        if (!from.withdraw(amount)) return false;
+        to.deposit(amount);
+        transRepo.add(new Transaction(from.getAccountNumber(), "Tiền đi", amount));
+        transRepo.add(new Transaction(to.getAccountNumber(), "Tiền đến", amount));
+        accountRepo.saveAll();
+        return true;
     }
 
     public double getBalance(Account acc) {
-        return acc.getBalance();
+        return (acc == null) ? 0.0 : acc.getBalance();
+    }
+
+    public void lockAccount(String accNum) {
+        Account acc = accountRepo.findByAccountNumber(accNum);
+        if (acc != null) {
+            acc.setLocked(true);
+            accountRepo.saveAll();
+        }
     }
 }

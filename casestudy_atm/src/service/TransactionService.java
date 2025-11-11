@@ -2,6 +2,7 @@ package service;
 
 import model.Transaction;
 import repository.TransactionRepository;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -12,9 +13,9 @@ public class TransactionService {
         this.repo = repo;
     }
 
-    public List<Transaction> getHistory(String accNum) {
+    public List<Transaction> getTransactionsByAccount(String accNum) {
         List<Transaction> list = repo.findByAccount(accNum);
-        Collections.sort(list);
+        Collections.sort(list); // Transaction.compareTo => mới nhất trước
         return list;
     }
 }

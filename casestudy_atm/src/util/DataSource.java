@@ -5,19 +5,14 @@ import model.Transaction;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DataSource {
-    private static final String ACCOUNT_FILE = "accounts.txt";
-    private static final String TRANSACTION_FILE = "transactions.txt";
+    private static final String ACCOUNT_FILE = "accounts";
+    private static final String TRANSACTION_FILE = "transactions";
 
-    // Định dạng thời gian dùng khi đọc/ghi file: dd/MM/yyyy HH:mm (không có giây)
-    private static final DateTimeFormatter FILE_TIME_FMT =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-    // Đọc danh sách tài khoản
+    // ✅ Đọc danh sách tài khoản (format: accNum,owner,password,pin,balance,bankName,locked)
     public static List<Account> loadAccounts() {
         List<Account> list = new ArrayList<>();
         File file = new File(ACCOUNT_FILE);
@@ -26,29 +21,46 @@ public class DataSource {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+
                 String[] p = line.split(",");
-                if (p.length == 4) {
-                    // p[0]=accNum, p[1]=owner, p[2]=pin, p[3]=balance
-                    try {
-                        double bal = Double.parseDouble(p[3]);
-                        list.add(new Account(p[0], p[1], p[2], bal));
-                    } catch (NumberFormatException nfe) {
-                        System.out.println("⚠ Bỏ qua dòng account không hợp lệ: " + line);
+                if (p.length < 5) {
+                    System.out.println("⚠️ Dòng tài khoản không hợp lệ: " + line);
+                    continue;
+                }
+
+                try {
+                    String acc = p[0].trim();
+                    String owner = p[1].trim();
+                    String password = p[2].trim();
+                    String pin = p[3].trim();
+                    double balance = Double.parseDouble(p[4].trim());
+                    String bank = (p.length >= 6) ? p[5].trim() : "DefaultBank";
+
+                    // ✅ Nếu có cột locked thì đọc, còn không thì mặc định là false
+                    boolean locked = false;
+                    if (p.length >= 7) {
+                        locked = Boolean.parseBoolean(p[6].trim());
                     }
+
+                    list.add(new Account(acc, owner, password, pin, balance, bank, locked));
+
+                } catch (Exception ex) {
+                    System.out.println("❌ Lỗi khi đọc dòng tài khoản: " + line);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return list;
     }
 
-    // Ghi danh sách tài khoản ra file
-    public static void saveAccounts(List<Account> list) {
+    // ✅ Ghi danh sách tài khoản ra file (có thêm cột locked)
+    public static void saveAccounts(List<Account> accounts) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(ACCOUNT_FILE))) {
-            for (Account a : list) {
-                bw.write(String.format("%s,%s,%s,%.2f",
-                        a.getAccountNumber(), a.getOwnerName(), a.getPin(), a.getBalance()));
+            for (Account a : accounts) {
+                bw.write(a.toString()); // format: accNum,owner,password,pin,balance,bankName,locked
                 bw.newLine();
             }
         } catch (IOException e) {
@@ -56,7 +68,7 @@ public class DataSource {
         }
     }
 
-    // Đọc danh sách giao dịch
+    // Đọc danh sách giao dịch (format: acc,type,amount,datetime)
     public static List<Transaction> loadTransactions() {
         List<Transaction> list = new ArrayList<>();
         File file = new File(TRANSACTION_FILE);
@@ -65,53 +77,56 @@ public class DataSource {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] p = line.split(",");
-                if (p.length == 4) {
-                    String acc = p[0];
-                    String type = p[1];
-                    double amount;
-                    try {
-                        amount = Double.parseDouble(p[2]);
-                    } catch (NumberFormatException nfe) {
-                        System.out.println("⚠ Bỏ qua dòng transaction không hợp lệ (số tiền): " + line);
-                        continue;
-                    }
+                if (line.trim().isEmpty()) continue;
 
-                    String timeStr = p[3].trim();
+                Transaction t = Transaction.fromDataString(line);
+                if (t != null) {
+                    list.add(t);
+                    continue;
+                }
+
+                String[] p = line.split(",");
+                if (p.length < 4) {
+                    System.out.println("⚠️ Invalid transaction line: " + line);
+                    continue;
+                }
+
+                String acc = p[0].trim();
+                String type = p[1].trim();
+                double amt;
+                try {
+                    amt = Double.parseDouble(p[2].trim());
+                } catch (NumberFormatException nfe) {
+                    System.out.println("⚠️ Invalid amount: " + line);
+                    continue;
+                }
+
+                String timeRaw = p[3].trim();
+
+                try {
+                    LocalDateTime dt = LocalDateTime.parse(timeRaw, Transaction.FILE_FMT);
+                    list.add(new Transaction(acc, type, amt, dt));
+                } catch (Exception ex1) {
                     try {
-                        // parse với định dạng dd/MM/yyyy HH:mm
-                        LocalDateTime time = LocalDateTime.parse(timeStr, FILE_TIME_FMT);
-                        // dùng constructor có thời gian
-                        Transaction t = new Transaction(acc, type, amount, time);
-                        list.add(t);
-                    } catch (Exception ex) {
-                        System.out.println("⚠ Không parse được thời gian cho dòng: " + line);
-                        // nếu muốn, thử parse ISO fallback:
-                        try {
-                            LocalDateTime timeIso = LocalDateTime.parse(timeStr);
-                            Transaction t = new Transaction(acc, type, amount, timeIso);
-                            list.add(t);
-                        } catch (Exception ex2) {
-                            // bỏ qua dòng nếu không parse được
-                            System.out.println("   -> Bỏ qua dòng transaction do định dạng thời gian lạ.");
-                        }
+                        LocalDateTime dtIso = LocalDateTime.parse(timeRaw);
+                        list.add(new Transaction(acc, type, amt, dtIso));
+                    } catch (Exception ex2) {
+                        System.out.println("⚠️ Cannot parse datetime: " + line);
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return list;
     }
 
-    // Ghi danh sách giao dịch
-    public static void saveTransactions(List<Transaction> list) {
+    // Ghi danh sách giao dịch ra file
+    public static void saveTransactions(List<Transaction> transactions) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(TRANSACTION_FILE))) {
-            for (Transaction t : list) {
-                // lưu thời gian theo định dạng FILE_TIME_FMT (dd/MM/yyyy HH:mm)
-                String timeStr = t.getDateTime().format(FILE_TIME_FMT);
-                bw.write(String.format("%s,%s,%.2f,%s",
-                        t.getAccountNumber(), t.getType(), t.getAmount(), timeStr));
+            for (Transaction t : transactions) {
+                bw.write(t.toDataString());
                 bw.newLine();
             }
         } catch (IOException e) {
